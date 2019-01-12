@@ -59,20 +59,5 @@ public class ReadWriteLockExample {
         }
 
         System.out.println(timeMeasurements);
-
-        ExecutorService executor = Executors.newFixedThreadPool(50);
-        Runnable readTask = () -> {
-            lock.readLock().lock();
-            try {
-                System.out.println(map.get("foo"));
-                Thread.sleep(1);
-            } finally {
-                lock.readLock().unlock();
-            }
-        };
-
-        executor.submit(readTask);
-        executor.submit(readTask);
-
     }
 }
