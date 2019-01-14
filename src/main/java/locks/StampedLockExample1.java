@@ -6,36 +6,37 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.StampedLock;
 
-
-public class ReadWriteLockExample {
+/**
+ * @author Benjamin Winterberg
+ */
+public class StampedLockExample1 {
 
     public static void main(String[] args) {
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
         Map<String, String> map = new HashMap<>();
 
-        ReadWriteLock lock = new ReentrantReadWriteLock();
+        StampedLock lock = new StampedLock();
 
         executor.submit(() -> {
-            lock.writeLock().lock();
+            long stamp = lock.writeLock();
             try {
                 ConcurrentUtils.sleep(1);
                 map.put("foo", "bar");
             } finally {
-                lock.writeLock().unlock();
+                lock.unlockWrite(stamp);
             }
         });
 
         Runnable readTask = () -> {
-            lock.readLock().lock();
+            long stamp = lock.readLock();
             try {
                 System.out.println(map.get("foo"));
                 ConcurrentUtils.sleep(1);
             } finally {
-                lock.readLock().unlock();
+                lock.unlockRead(stamp);
             }
         };
         executor.submit(readTask);
