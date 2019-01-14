@@ -1,4 +1,4 @@
-package locks;
+package problemas;
 
 import utils.ConcurrentUtils;
 
