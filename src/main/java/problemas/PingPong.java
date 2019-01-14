@@ -1,5 +1,6 @@
 package problemas;
 
+import locks.MonitorSemaphore;
 import utils.ConcurrentUtils;
 
 import java.util.concurrent.ExecutorService;
@@ -45,46 +46,17 @@ public class PingPong {
         thread2.join();
     }
 
-    static class ConditionMonitor {
-
-        private boolean condition;
-
-        public ConditionMonitor(boolean condition) {
-            this.condition = condition;
-        }
-
-        public void checkCondition() {
-            synchronized (this) {
-                while(!condition) {
-                    try {
-                        this.wait();
-                        condition = true;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                condition = false;
-            }
-        }
-
-        public void signal() {
-            synchronized (this) {
-                this.notify();
-            }
-        }
-    }
-
     private static void monitorSolution() throws Exception {
-        ConditionMonitor pongMonitor = new ConditionMonitor(false);
-        ConditionMonitor pingMonitor = new ConditionMonitor(true);
+        MonitorSemaphore pongMonitor = new MonitorSemaphore(0);
+        MonitorSemaphore pingMonitor = new MonitorSemaphore(1);
 
         Thread thread1 = new Thread(() -> {
             int count = 10;
             while(count > 0) {
-                pingMonitor.checkCondition();
+                pingMonitor.acquire();
                 System.out.println("ping");
                 ConcurrentUtils.sleep(1000);
-                pongMonitor.signal();
+                pongMonitor.release();
                 count--;
             }
         });
@@ -93,10 +65,10 @@ public class PingPong {
         Thread thread2 = new Thread(() -> {
             int count = 10;
             while(count > 0) {
-                pongMonitor.checkCondition();
+                pongMonitor.acquire();
                 System.out.println("pong");
                 ConcurrentUtils.sleep(1000);
-                pingMonitor.signal();
+                pingMonitor.release();
                 count--;
             }
         });
