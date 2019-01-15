@@ -10,7 +10,11 @@ public class MonitorSemaphore {
     public void acquire() {
         //Monitor
         synchronized (this) {
+            //Cuando el thread entra al bloque synchronized y se queda esperando en wait(), este lock se libera atomicamente
+            //De esta manera otros threads pueden intentar entrar.
             while(permits == 0) {
+                //Tiene que estar en while porque cuando se hace notifyAll() todos se despiertan y no hay garantia de
+                //de que thread gana. Entonces en caso de perder tiene que volver a intentar mas adelante.
                 try {
                     //Supongamos que ping ejecuta wait() se libera el monitor atomicamente. De esta forma el
                     //thread pong puede ejecutar el metodo release sobre este semaforo.
